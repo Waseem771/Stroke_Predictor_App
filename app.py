@@ -1,9 +1,9 @@
-"""
+# """
 Stroke Risk Predictor — Streamlit App
 Trained ML model deployed live on Streamlit Cloud
 
 This app:
-1. Loads data from CSV
+1. Loads data from a local CSV
 2. Trains a model on startup (cached)
 3. Makes predictions based on user input
 
@@ -36,15 +36,26 @@ st.set_page_config(
 # ================================================================
 # Load & Cache Data
 # ================================================================
+DATA_PATH = "data/healthcare-dataset-stroke-data.csv"
+
+
 @st.cache_data
-def load_data():
-    """Load the stroke dataset from CSV"""
+def load_data(path):
+    """Load the dataset. Cached so it only runs once."""
+    if not os.path.exists(path):
+        return None, "not_found"
     try:
-        df = pd.read_csv("https://github.com/Waseem771/Stroke_Predictor_App/blob/main/data/healthcare-dataset-stroke-data.csv")
-        return df
-    except FileNotFoundError:
-        st.error("❌ CSV file not found at `https://github.com/Waseem771/Stroke_Predictor_App/blob/main/data/healthcare-dataset-stroke-data.csv`")
-        return None
+        df = pd.read_csv(path)
+    except Exception:
+        return None, "parse_error"
+    if df.shape[1] == 1:
+        try:
+            df = pd.read_csv(path, sep=None, engine="python")
+        except Exception:
+            pass
+    df.columns = [c.strip() for c in df.columns]
+    return df, "ok"
+
 
 # ================================================================
 # Train Model (cached, runs once per session)
@@ -104,8 +115,13 @@ def train_model(df):
 # ================================================================
 # Load Data & Train Model
 # ================================================================
-df = load_data()
-if df is None:
+df, status = load_data(DATA_PATH)
+
+if status == "not_found":
+    st.error(f"❌ CSV file not found at `{DATA_PATH}`. Make sure it's committed to the repo.")
+    st.stop()
+elif status == "parse_error":
+    st.error(f"❌ Couldn't parse `{DATA_PATH}` as CSV. Check the file isn't corrupted or empty.")
     st.stop()
 
 model, encoders = train_model(df)
