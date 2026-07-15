@@ -40,10 +40,10 @@ st.set_page_config(
 def load_data():
     """Load the stroke dataset from CSV"""
     try:
-        df = pd.read_csv("data/healthcare-dataset-stroke-data.csv")
+        df = pd.read_csv("https://github.com/Waseem771/Stroke_Predictor_App/blob/main/data/healthcare-dataset-stroke-data.csv")
         return df
     except FileNotFoundError:
-        st.error("❌ CSV file not found at `data/healthcare-dataset-stroke-data.csv`")
+        st.error("❌ CSV file not found at `https://github.com/Waseem771/Stroke_Predictor_App/blob/main/data/healthcare-dataset-stroke-data.csv`")
         return None
 
 # ================================================================
